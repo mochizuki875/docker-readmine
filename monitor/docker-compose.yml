@@ -1,0 +1,89 @@
+version: '2'
+services:
+  prometheus:
+    depends_on:  # 関連コンテナを指定（exporter類を指定）
+    - node_exporter
+    - cadvisor
+    - blackbox_exporter
+    - alertmanager
+    image: prom/prometheus
+    ports:
+    - 9090:9090
+    volumes:  # サーバディレクトリにマウント（設定ファイル等）
+    - ./prometheus:/etc/prometheus
+    restart: always
+
+  grafana:
+    depends_on:  # 関連コンテナを指定（クエリ投げ先のPrometheusを指定）
+    - prometheus
+    image: grafana/grafana
+    user: "0"  # ボリュームマウントのためにrootユーザーを指定
+    ports:
+    - 3000:3000
+    volumes:  # サーバディレクトリにマウント（設定ファイル等）
+    - ./grafana:/var/lib/grafana
+    restart: always
+
+  node_exporter:
+    image: quay.io/prometheus/node-exporter 
+    # ports:  
+    # - 9100:9100
+    volumes:
+    - /:/host:ro,rslave
+    pid: "host"
+    command:
+      - '--path.rootfs=/host'
+    restart: always
+
+  cadvisor:
+    image: gcr.io/google-containers/cadvisor
+    # ports:
+    # - 8080:8080
+    volumes:
+    - /:/rootfs:ro
+    - /var/run:/var/run:ro
+    - /sys:/sys:ro
+    - /var/lib/docker/:/var/lib/docker:ro
+    - /dev/disk/:/dev/disk:ro
+    privileged: true
+    devices:
+    - /dev/kmsg
+    restart: always
+
+  blackbox_exporter:
+    image: prom/blackbox-exporter:master
+    # ports:
+    # - 9115:9115
+    volumes:  # サーバディレクトリにマウント（設定ファイル等）
+    - ./blackbox_exporter/config:/config
+    command:
+    - '--config.file=/config/blackbox.yml'
+    networks:  # NginxとRedmineを監視するため各コンテナのNWに参加
+    - default
+    - nginx_default
+    - redmine_default
+    external_links:  # NginxとRedmineのプレフィックスを指定
+      - nginx_proxy_1:nginx_proxy
+      - redmine_redmine_1:redmine
+    restart: always
+
+  alertmanager:
+    image: prom/alertmanager
+    ports:
+    - 9093:9093
+    volumes:  # サーバディレクトリにマウント（設定ファイル等）
+    - ./alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    - ./alertmanager:/alertmanager
+    restart: always
+
+
+networks: # コンテナNWを定義
+  default:  # defaultでコンテナが参加するNW
+    external:
+      name: prometheus-network
+  nginx_default:  # NginxコンテナのNW（外部）
+    external:
+      name: nginx_default
+  redmine_default:  # RedmineコンテナのNW（外部）
+    external:
+      name: redmine_default

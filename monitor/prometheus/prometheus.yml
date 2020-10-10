@@ -1,0 +1,86 @@
+global:
+  scrape_interval:     15s # By default, scrape targets every 15 seconds.
+
+  # Attach these labels to any time series or alerts when communicating with
+  # external systems (federation, remote storage, Alertmanager).
+  external_labels:
+    monitor: 'codelab-monitor'
+
+# A scrape configuration containing exactly one endpoint to scrape:
+# Here it's Prometheus itself.
+scrape_configs:
+
+  # metrics_path defaults to '/metrics'
+    # scheme defaults to 'http'.
+
+  # The job name is added as a label `job=<job_name>` to any timeseries scraped from this config.
+  - job_name: 'prometheus'
+
+    # Override the global default and scrape targets from this job every 5 seconds.
+    scrape_interval: 5s
+
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # node_exporterによるdockerホストの監視
+  - job_name: 'node_exporter'
+
+    # Override the global default and scrape targets from this job every 5 seconds.
+    scrape_interval: 5s
+
+    static_configs:
+      - targets: ['node_exporter:9100']  # node_exporterのサービス名（docker-composeにて定義）を指定
+        labels:
+          group: 'docker-host'
+
+  # cAdvisorによるdockerコンテナの監視
+  - job_name: 'cAdvisor'
+
+    # Override the global default and scrape targets from this job every 5 seconds.
+    scrape_interval: 5s
+
+    static_configs:
+      - targets: ['cadvisor:8080']  # cadvisorのサービス名（docker-composeにて定義）を指定
+        labels:
+          group: 'docker-container'
+
+  # grafana監視
+  - job_name: 'grafana'
+
+    # Override the global default and scrape targets from this job every 5 seconds.
+    scrape_interval: 5s
+
+    static_configs:
+      - targets: ['grafana:3000']  # Grafanaのサービス名（docker-composeにて定義）を指定
+        labels:
+          group: 'grafana'
+
+  # blackbox_exporterによるweb監視
+  - job_name: 'blackbox_http'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        - http://redmine    # 死活監視対象のURL（それぞれexternal_linksで指定したコンテナのプレフィックス名を指定）
+        - https://nginx_proxy
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox_exporter:9115  # Blackbox exporter.
+
+# アラートルール設定を記載
+# Rule files specifies a list of globs. Rules and alerts are read from
+# all matching files.
+rule_files:
+  - "/etc/prometheus/alert.yml"
+
+# アラートをalertmanagerに通知する設定
+alerting:
+  alertmanagers:
+  - static_configs:
+    - targets:
+      - alertmanager:9093  # alertmanagerのサービス名（docker-composeにて定義）を指定

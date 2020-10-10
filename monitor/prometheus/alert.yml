@@ -1,0 +1,54 @@
+groups:
+  - name: Nginx-Health-Check
+    rules:
+      - alert: Nginx-Stop
+        expr: probe_success{instance="https://nginx_proxy",job="blackbox_http"} < 1
+        for: 1m
+        labels:
+          level: alert
+        annotations:
+          summary: Nginx R-Proxy is Stopping
+      - alert: Nginx-Restart
+        expr: probe_success{instance="https://nginx_proxy",job="blackbox_http"} == 1
+        for: 1m
+        labels:
+          level: notice
+        annotations:
+          summary: Nginx R-Proxy is Running
+
+  - name: Redmine-Health-Check
+    rules:
+      - alert: Redmine-Stop
+        expr: probe_success{instance="http://redmine",job="blackbox_http"} < 1
+        for: 1m
+        labels:
+          level: alert
+        annotations:
+          summary: Redmine Web Page is Stopping
+      - alert: Redmine-Restart
+        expr: probe_success{instance="http://redmine",job="blackbox_http"} == 1
+        for: 1m
+        labels:
+          level: notice
+        annotations:
+          summary: Redmine Web Page is Running
+
+  - name: Node-CPU-Check
+    rules:
+      - alert: Node-CPU-Over-80
+        expr: sum(avg without(cpu) (rate(node_cpu_seconds_total{mode!="idle"}[5m])))*100 > 80
+        for: 1m
+        labels:
+          level: alert
+        annotations:
+          summary: Node CPU Usage Over 80%
+
+  - name: Node-Memory-Check
+    rules:
+      - alert: Node-Memory-Over-80
+        expr: node_memory_Active_bytes{group="docker-host"} / ignoring(group,instance,job) machine_memory_bytes{group="docker-container"}*100 > 80
+        for: 1m
+        labels:
+          level: alert
+        annotations:
+          summary: Node Memory Usage Over 80%

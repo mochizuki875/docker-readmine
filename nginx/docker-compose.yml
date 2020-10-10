@@ -1,0 +1,21 @@
+version: '2'
+
+services:
+  proxy:
+    image: nginx:latest
+    ports:
+      # - 80:80
+      - 443:443
+    networks:
+      - default
+      - redmine_default
+    external_links:
+      - redmine_redmine_1:redmine
+    volumes:
+    - ./tls/:/etc/nginx/tls/
+    - ./conf.d/:/etc/nginx/conf.d/
+    # mem_limit: 0.5g
+    restart: always
+networks:
+  redmine_default:
+    external: true
