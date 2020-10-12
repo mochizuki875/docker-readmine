@@ -104,6 +104,13 @@ receivers:
 #   [ - <inhibit_rule> ... ]
 ~~~
 
+### 監視用NW作成
+
+~~~
+docker network create prometheus-network
+~~~
+
+
 ### コンテナデプロイ
 
 ~~~
