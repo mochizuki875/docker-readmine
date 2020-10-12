@@ -6,6 +6,21 @@ https://github.com/sameersbn/docker-redmine
 
 ## クイックスタート
 
+### 監視用NW作成
+
+~~~
+docker network create prometheus-network
+~~~
+
+### Redmineコンテナビルド
+
+~~~
+cd redmine/docker-redmine
+docker build -t sameersbn/redmine:4.1.1-7 .
+~~~
+
+### コンテナデプロイ
+
 ~~~
 cd redmine
 docker-compose up -d
