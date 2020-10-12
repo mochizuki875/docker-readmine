@@ -49,20 +49,21 @@ templates:
 route:
   receiver: Administrator
 
-  # level=alertのものはAdministratorに送信する
+  # level=alertのものはOperatorに送信する
   routes:
     - match:
         level: alert
-      receiver: Administrator
+      receiver: Operator
 
 # 送信先の定義
 # A list of notification receivers.
 receivers:
-  - name: 'Administrator'
+  - name: 'Operator'
     email_configs:
-      - to: '<★アラート送信先gmailアドレス★>'
+      - to: '<★アラート送信元gmailアドレス★>'
   # slack-configs:
-    # channel: <送信先チャンネル>
+    # channel: ＜送信先チャンネル＞
+  - name: 'Administrator'
 
 # 特定の条件下において無視するアラートの条件を指定
 # A list of inhibition rules.

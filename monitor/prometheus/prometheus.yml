@@ -83,4 +83,4 @@ alerting:
   alertmanagers:
   - static_configs:
     - targets:
-      - alertmanager:9093  # alertmanagerのサービス名（docker-composeにて定義）を指定
+      - alertmanager:9093   # alertmanagerのサービス名（docker-composeにて定義）を指定

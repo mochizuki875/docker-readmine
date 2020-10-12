@@ -26,10 +26,11 @@ services:
 
   node_exporter:
     image: quay.io/prometheus/node-exporter 
-    # ports:  
+    # ports:
     # - 9100:9100
     volumes:
     - /:/host:ro,rslave
+    # network_mode: "host"
     pid: "host"
     command:
       - '--path.rootfs=/host'
@@ -58,13 +59,13 @@ services:
     - ./blackbox_exporter/config:/config
     command:
     - '--config.file=/config/blackbox.yml'
+    external_links:  # NginxとRedmineのプレフィックスを指定
+      - nginx_proxy_1:nginx_proxy
+      - redmine_redmine_1:redmine
     networks:  # NginxとRedmineを監視するため各コンテナのNWに参加
     - default
     - nginx_default
     - redmine_default
-    external_links:  # NginxとRedmineのプレフィックスを指定
-      - nginx_proxy_1:nginx_proxy
-      - redmine_redmine_1:redmine
     restart: always
 
   alertmanager:
@@ -77,7 +78,7 @@ services:
     restart: always
 
 
-networks: # コンテナNWを定義
+networks:  # コンテナNWを定義
   default:  # defaultでコンテナが参加するNW
     external:
       name: prometheus-network

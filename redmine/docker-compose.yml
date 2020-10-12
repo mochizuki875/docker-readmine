@@ -9,6 +9,7 @@ services:
     - DB_NAME=redmine_production
     volumes:
     - /srv/docker/redmine/mysql:/var/lib/mysql
+    # mem_limit: 0.5g
     restart: always
 
   redmine:
@@ -63,4 +64,5 @@ services:
     volumes:
     - /srv/docker/redmine/redmine:/home/redmine/data
     - /srv/docker/redmine/redmine-logs:/var/log/redmine
+    # mem_limit: 1g
     restart: always

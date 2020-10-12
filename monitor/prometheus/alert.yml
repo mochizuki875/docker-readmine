@@ -52,3 +52,12 @@ groups:
           level: alert
         annotations:
           summary: Node Memory Usage Over 80%
+  - name: Node-Disk-Check
+    rules:
+      - alert: Node-Disk-Over-80
+        expr: (node_filesystem_size_bytes{fstype="xfs"}-node_filesystem_avail_bytes{fstype="xfs"}) / node_filesystem_size_bytes{fstype="xfs"} * 100 > 80
+        for: 1m
+        labels:
+          level: alert
+        annotations:
+          summary: Node Disk Usage Over 80%
